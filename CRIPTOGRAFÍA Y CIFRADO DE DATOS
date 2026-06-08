@@ -1,0 +1,120 @@
+import os
+
+def mostrar_menu():
+    """Muestra el menú interactivo de CryptoCesar Pro."""
+    print("\n" + "="*33)
+    print("      🔐 CRYPTOCESAR PRO v1.0      ")
+    print("="*33)
+    print("1. Cifrar mensaje")
+    print("2. Descifrar mensaje")
+    print("3. Ver Historial en Consola")
+    print("4. Exportar Historial a TXT")
+    print("5. Salir")
+    print("="*33)
+
+def procesar_cesar(texto, clave, modo="cifrar"):
+    """
+    Procesa el texto para cifrar o descifrar.
+    Soporta mayúsculas y minúsculas de forma nativa (Actividad 1 y 2).
+    """
+    # Si el modo es descifrar, invertimos el desplazamiento de la clave
+    if modo == "descifrar":
+        clave = -clave
+        
+    resultado = ""
+    
+    for caracter in texto:
+        if caracter.isalpha():
+            # Detectar si es mayúscula o minúscula para usar el valor ASCII base correcto
+            base = 65 if caracter.isupper() else 97
+            # Aplicar la fórmula matemática del módulo 26
+            nuevo_codigo = (ord(caracter) - base + clave) % 26
+            resultado += chr(nuevo_codigo + base)
+        else:
+            # Mantiene espacios, números y caracteres especiales intactos
+            resultado += caracter
+            
+    return resultado
+
+def exportar_a_txt(historial):
+    """Guarda el historial de operaciones en un archivo de texto."""
+    if not historial:
+        print("\n📭 No hay datos en el historial para exportar.")
+        return
+        
+    nombre_archivo = "historial_cripto.txt"
+    try:
+        with open(nombre_archivo, "w", encoding="utf-8") as archivo:
+            archivo.write("=========================================\n")
+            archivo.write("     HISTORIAL DE OPERACIONES - CRYPTO    \n")
+            archivo.write("=========================================\n\n")
+            for item in historial:
+                archivo.write(f"Operación: {item['operacion'].upper()}\n")
+                archivo.write(f"Original:  {item['original']}\n")
+                archivo.write(f"Resultado: {item['resultado']}\n")
+                archivo.write(f"Clave:     {item['clave']}\n")
+                archivo.write("-" * 41 + "\n")
+        print(f"\n💾 ¡Éxito! Historial exportado a: {os.path.abspath(nombre_archivo)}")
+    except Exception as e:
+        print(f"\n❌ Error al guardar el archivo: {e}")
+
+def principal():
+    """Función principal que coordina CryptoCesar Pro (Actividad 3)."""
+    historial_operaciones = [] # Actividad 4
+    contador_operaciones = 0
+    
+    while True: # El bucle permite múltiples operaciones (Actividad 3)
+        mostrar_menu()
+        opcion = input("Seleccione una opción (1-5): ").strip()
+        
+        if opcion in ("1", "2"):
+            modo = "cifrar" if opcion == "1" else "descifrar"
+            
+            mensaje = input(f"\nDigite el mensaje a {modo}: ")
+            
+            # Validación de la clave numéricas
+            while True:
+                try:
+                    clave = int(input("Digite la clave (desplazamiento numérico): "))
+                    break
+                except ValueError:
+                    print("⚠️ Error: La clave debe ser un número entero.")
+            
+            # Procesamiento
+            resultado_texto = procesar_cesar(mensaje, clave, modo)
+            contador_operaciones += 1
+            
+            # Guardar registro en el historial
+            historial_operaciones.append({
+                "operacion": modo,
+                "original": mensaje,
+                "resultado": resultado_texto,
+                "clave": clave
+            })
+            
+            print(f"\n✨ Mensaje {modo}do con éxito:")
+            print(f"👉 {resultado_texto}")
+            print(f"📊 Operaciones en esta sesión: {contador_operaciones}")
+            
+        elif opcion == "3":
+            print("\n📜 --- HISTORIAL DE OPERACIONES ---")
+            if not historial_operaciones:
+                print("El historial está vacío.")
+            else:
+                for idx, op in enumerate(historial_operaciones, 1):
+                    print(f"\n[{idx}] Tipo: {op['operacion'].upper()} | Clave: {op['clave']}")
+                    print(f"    Entrada: {op['original']}")
+                    print(f"    Salida:  {op['resultado']}")
+                print(f"\n🔢 Cantidad total de operaciones: {contador_operaciones}")
+                
+        elif opcion == "4":
+            exportar_a_txt(historial_operaciones)
+            
+        elif opcion == "5":
+            print("\n🚪 Saliendo de CryptoCesar Pro. ¡Mantén tus datos seguros!")
+            break
+        else:
+            print("\n⚠️ Opción inválida. Por favor, seleccione un número del 1 al 5.")
+
+if __name__ == "__main__":
+    principal()
